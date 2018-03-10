@@ -1,0 +1,143 @@
+<div class="row">
+    <div class="panel panel-inverse">
+        <div class="panel-heading">
+            <h4 ng-if="(!$ctrl.user._id)" class="panel-title">Create Form</h4>
+            <h4 ng-if="$ctrl.user._id" class="panel-title">Edit Form</h4>
+        </div>
+        <div class="panel-body">
+            <form name="$ctrl.form" ng-submit="$ctrl.formValidate()" class="col-sm-8 form-horizontal" novalidate>
+
+                <div class="form-group" ng-class="{'has-error': $ctrl.validBoth('firstName'),'has-feedback': $ctrl.validBoth('firstName')}">
+                    <label for="firstName">First Name</label>
+                    <input required type="text" ng-model="$ctrl.user.firstName" class="form-control" id="firstName" name="firstName" placeholder="enter first name"
+                        ng-pattern="/^[a-zA-Z]{1,16}$/" />
+                    <span class="fa fa-times form-control-feedback" ng-show="$ctrl.valid('firstName')"></span>
+                    <span class="control-label" ng-show="$ctrl.valid('firstName')">This field is required.</span>
+                    <span class="control-label" ng-show="$ctrl.valid('firstName')">This field must contain letters and be at most 16 characters in length.</span>
+                </div>
+                <div class="form-group" ng-class="{'has-error': $ctrl.validBoth('lastName'),'has-feedback': $ctrl.validBoth('lastName')}">
+                    <label for="lastName">Last Name</label>
+                    <input required type="text" ng-model="$ctrl.user.lastName" class="form-control" id="lastName" name="lastName" placeholder="enter last name"
+                        ng-pattern="/^[a-zA-Z]{1,20}$/" />
+                    <span class="fa fa-times form-control-feedback" ng-show="$ctrl.valid('lastName')"></span>
+                    <span class="control-label" ng-show="$ctrl.valid('lastName')">This field is required.</span>
+                    <span class="control-label" ng-show="$ctrl.valid('lastName')">This field must contain letters and be at most 20 characters in length.</span>
+                </div>
+                <div class="form-group" ng-class="{'has-error': $ctrl.valid('userType'),'has-feedback': $ctrl.valid('userType')}">
+                    <label for="userType">User Type</label>
+                    <select required class="form-control" ng-change="$ctrl.emptyIds()" ng-model="$ctrl.user.userType" id="userType" name="userType">
+                        <option value="" selected>Select a user type</option>
+                        <option value="Client">Client</option>
+                        <option value="Therapist">Therapist</option>
+                        <option value="Supporter">Supporter</option>
+                        <option value="Admin">Administrator</option>
+                    </select>
+                    <span class="control-label" ng-show="$ctrl.valid('userType')">This field is required.</span>
+                </div>
+                <div ng-if="(!$ctrl.user._id)" ng-class="{'has-error': $ctrl.validBoth('username'),'has-feedback': $ctrl.validBoth('username')}"
+                    class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" required ng-model="$ctrl.user.username" class="form-control" id="username" name="username" placeholder="enter username"
+                        ng-pattern="/^[a-zA-Z0-9-_]{5,18}$/" />
+                    <span class="fa fa-times form-control-feedback" ng-show="$ctrl.valid('username')"></span>
+                    <span class="control-label" ng-show="$ctrl.valid('username')">This field is required and must be unique.</span>
+                    <span class="control-label" ng-show="$ctrl.valid('username')">This field can contain letters, dashes, and underscores. Length must be between 5 and 18.</span>
+                </div>
+                <div class="form-group" ng-class="{'has-error': $ctrl.validBoth('password'),'has-feedback': $ctrl.validBoth('password')}">
+                    <label for="password">Password</label>
+                    <input type="password" required ng-model="$ctrl.user.password" class="form-control" id="password" name="password" placeholder="password"
+                        ng-pattern="/^(?=.*\d)(?=.*[A-Z])[A-Za-z\d]{6,24}$/" />
+                    <span class="fa fa-times form-control-feedback" ng-show="$ctrl.valid('password')"></span>
+                    <span class="control-label" ng-show="$ctrl.valid('password')">This field is required.</span>
+                    <span class="control-label" ng-show="$ctrl.valid('password')">Your password must contain one uppercase, one number, and be between 6 and 24 in length.</span>
+                </div>
+                <div required class="form-group" ng-class="{'has-error': $ctrl.valid('email'),'has-feedback': $ctrl.valid('email')}">
+                    <label for="email">Email</label>
+                    <input required type="email" ng-model="$ctrl.user.email" class="form-control" id="email" name="email" placeholder="enter email"
+                    />
+                    <span class="fa fa-times form-control-feedback" ng-show="$ctrl.valid('email')"></span>
+                    <span class="control-label" ng-show="$ctrl.valid('email')">Valid email required.</span>
+                </div>
+                <div class="form-group" ng-class="{'has-error': $ctrl.valid('phone'),'has-feedback': $ctrl.valid('phone')}">
+                    <label for="phone">Phone (optional)</label>
+                    <input type="tel" ng-model="$ctrl.user.phone" mask="(999) 999-9999" ng-pattern="/^(\(\d{3}\) )\d{3}-\d{4}$/" clean="true"
+                        class="form-control" id="phone" name="phone" placeholder="(123) 456-7890" />
+                    <span class="fa fa-times form-control-feedback" ng-show="$ctrl.valid('phone')"></span>
+                    <span class="control-label" ng-show="$ctrl.valid('phone')">Input must match: (123) 456-7890</span>
+                </div>
+                <div class="form-group">
+                    <label for="supporterIds">Supporters (Multiple Entries If Required) </label>
+                    <ui-select multiple theme="bootstrap" ng-model="$ctrl.user.supporterIds" close-on-select="false" name="supporterIds" id="supporterIds"
+                        title="Choose a supporter" ng-disabled="$ctrl.user.userType == 'Admin'|| $ctrl.user.userType == 'Supporter'">
+                        <ui-select-match placeholder="Select one or more"> {{$item.userType}}: {{$item.username}}</ui-select-match>
+                        <ui-select-choices repeat="support._id as support in $ctrl.therapistSupport | filter: {username: $select.search} | orderBy: 'username'"
+                            group-by="'userType'">
+                            {{support.username}}
+                        </ui-select-choices>
+                    </ui-select>
+                    <span class="control-label" ng-show="$ctrl.user.userType == 'admin'|| $ctrl.user.userType == 'supporter'">Only clients and therapists can add supporter Ids.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="imageUpload">Upload Avatar Image</label>
+                    <input type="file" file-input="$ctrl.user.fileInput" on-change="$ctrl.checkPreview()" name="imageUpload" id="imageUpload"
+                        placeholder="enter image URL">
+                </div>
+                <div class="form-group">
+                    <input type='button' ng-click='$ctrl.defaultImage()' class='btn btn-sm m-r-5 btn-default' value="Set To Default">
+                </div>
+                <div ng-if="(!$ctrl.user._id)" class="form-group" ng-class="{'has-error': $ctrl.valid('privacyStatement'),'has-feedback': $ctrl.valid('privacyStatement')}">
+                    <div class="checkbox checkbox-css checkbox-inline checkbox-inverse">
+                        <input id="inline_css_checkbox_1" type="checkbox" required name="privacyStatement" ng-model="$ctrl.user.agreesToPrivacyStatement"
+                        />
+                        <label for="inline_css_checkbox_1">
+                            <span class="control-label">I Agree to the Privacy Statement</span>
+                        </label>
+                        <p class="control-label" ng-show="$ctrl.valid('privacyStatement')">
+                            <span>You must agree with the Privacy Statement.</span>
+                        </p>
+                    </div>
+                </div>
+                <br>
+                <div class="form-group">
+                    <button type="submit" ng-if="$ctrl.user._id" class='btn btn-success'>Edit User</button>
+                    <button type="submit" ng-if="(!$ctrl.user._id)" class="btn btn-success">Submit User</button>
+                    <button type="submit" ui-sref="main.users.list" class="btn btn-default">Cancel</button>
+                </div>
+            </form>
+            <div class="col-sm-4">
+                <label for="imagePreview">Avatar </label>
+                <div class="form-group" style="height: 225px; width: 225px;">
+                    <img class="form-control-static" ng-src="{{$ctrl.imagePreview}}" style="height: 100%; width: 100%; border-radius: 25%;" name="imagePreview">
+                </div>
+                <form ng-if="$ctrl.user._id">
+                    <div class='col-sm-6'>
+                        <div class="form-group">
+                            <label for="staticUsername">Username </label>
+                            <p ng-bind="$ctrl.user.username" class="form-control-static" name="staticUsername"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="_id">User Id </label>
+                            <p ng-bind="$ctrl.user._id" class="form-control-static" name="_id"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="_id">Email Confirmed? </label>
+                            <p ng-if="$ctrl.user.isEmailConfirmed" class="form-control-static" name="isEmailConfirmed">Yes</p>
+                            <p ng-if="(!$ctrl.user.isEmailConfirmed)" class="form-control-static" name="isEmailConfirmedNot">No</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="dateCreated">Date Created </label>
+                            <p ng-bind="$ctrl.user.dateCreated" class="form-control-static" name="dateCreated"></p>
+                            <label for="dateModified">Date Modified </label>
+                            <p ng-bind="$ctrl.user.dateModified" class="form-control-static" name="dateModified"></p>
+                            <label for="dateDeactivated">Date Deactivated </label>
+                            <p ng-bind="$ctrl.user.dateDeactivated" class="form-control-static" name="dateDeactivated"></p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
