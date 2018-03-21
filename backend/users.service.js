@@ -8,18 +8,14 @@ const ObjectId = mongodb.ObjectId
 module.exports = {
   login: _login,
   read: _read,
+  readById: _readById,
+  readSupporters: _readSupporters,
+  readBySupporterId: _readBySupporterId,
   create: _create,
   update: _update,
-  deactivate: _deactivate,
-  readById: _readById,
-  readClients: _readClients,
-  readTherapists: _readTherapists,
-  readSupporters: _readSupporters,
   updateIsEmailConfirmed: _updateIsEmailConfirmed,
-  readByIds: _readByIds,
-  deleteSupporter: _deleteSupporter,
-  readByUsername: _readByUsername,
-  readBySupporterId: _readBySupporterId
+  deactivate: _deactivate,
+  deleteSupporter: _deleteSupporter
 }
 
 function _login(username, password) {
@@ -27,29 +23,6 @@ function _login(username, password) {
     .then(user => {
       user._id = user._id.toString()
       return user
-    })
-    .catch(err => {
-      console.warn(err)
-      return Promise.reject(err)
-    })
-}
-
-function _readBySupporterId(supporterId) {
-  return conn.db().collection("users").find({ supporterIds: new ObjectId(supporterId), dateDeactivated: null }).toArray()
-    .then(datas => {
-      const clients = []
-      for (let data of datas) {
-        // Get rid of user sensitive information
-        clients.push({
-          _id: data._id.toString(),
-          firstName: data.firstName,
-          lastName: data.lastName,
-          username: data.username,
-          userType: data.userType,
-          imageUrl: data.imageUrl
-        })
-      }
-      return clients
     })
     .catch(err => {
       console.warn(err)
@@ -76,7 +49,21 @@ function _read() {
     })
 }
 
-
+function _readById(id) {
+  return conn.db().collection("users").findOne({ _id: new ObjectId(id), dateDeactivated: null })
+    .then(client => {
+      client._id = client._id.toString()
+      for (let i = 0; i < client.supporterIds.length; i++) {
+        const support = client.supporterIds
+        support[i] = support[i].toString()
+      }
+      return client
+    })
+    .catch(err => {
+      console.warn(err)
+      return Promise.reject(err)
+    })
+}
 
 function _readSupporters() {
   return conn.db().collection("users").find({ userType: "Supporter", dateDeactivated: null }).toArray()
@@ -97,77 +84,21 @@ function _readSupporters() {
     })
 }
 
-function _readClients() {
-  return conn.db().collection("users").find({ userType: "Client", dateDeactivated: null }).toArray()
-    .then(clients => {
-      for (let j = 0; j < clients.length; j++) {
-        const client = clients[j];
-        client._id = client._id.toString()
-        for (let i = 0; i < client.supporterIds.length; i++) {
-          const supporters = client.supporterIds
-          supporters[i] = supporters[i].toString()
-        }
+function _readBySupporterId(supporterId) {
+  return conn.db().collection("users").find({ supporterIds: new ObjectId(supporterId), dateDeactivated: null }).toArray()
+    .then(datas => {
+      const clients = []
+      for (let data of datas) {
+        clients.push({
+          _id: data._id.toString(),
+          firstName: data.firstName,
+          lastName: data.lastName,
+          username: data.username,
+          userType: data.userType,
+          imageUrl: data.imageUrl
+        })
       }
       return clients
-    })
-    .catch(err => {
-      console.warn(err)
-      return Promise.reject(err)
-    })
-}
-
-function _readTherapists() {
-  return conn.db().collection('users').find({ userType: "Therapist", dateDeactivated: null }).toArray()
-    .then(therapists => {
-      for (let j = 0; j < therapists.length; j++) {
-        const therapist = therapists[j]
-        therapist._id = therapist._id.toString()
-        for (let i = 0; i < therapist.supporterIds.length; i++) {
-          const supporters = therapist.supporterIds
-          supporters[i] = supporters[i].toString()
-        }
-      }
-      return therapists
-    })
-    .catch(err => {
-      console.warn(err)
-      return Promise.reject(err)
-    })
-}
-
-function _readByIds(ids) {
-  for (let i = 0; i < ids.length; i++) {
-    ids[i] = new ObjectId(ids[i])
-  }
-  return conn.db().collection("users").find({ _id: { $in: ids } }).toArray()
-    .then(client => {
-      return client
-    })
-    .catch(err => {
-      console.warn(err)
-      return Promise.reject(err)
-    })
-}
-
-function _readByUsername(username) {
-  return conn.db().collection("users").findOne({ username: username, dateDeactivated: null })
-    .then(user => {
-      return user
-    }).catch(err => {
-      console.warn(err)
-      return Promise.reject(err)
-    })
-}
-
-function _readById(id) {
-  return conn.db().collection("users").findOne({ _id: new ObjectId(id), dateDeactivated: null })
-    .then(client => {
-      client._id = client._id.toString()
-      for (let i = 0; i < client.supporterIds.length; i++) {
-        const support = client.supporterIds
-        support[i] = support[i].toString()
-      }
-      return client
     })
     .catch(err => {
       console.warn(err)

@@ -19,9 +19,7 @@ module.exports = apiPrefix => {
         logout: _logout,
         currentUser: _currentUser,
         confirmEmail: _confirmEmail,
-        readClients: _readClients,
         readSupporters: _readSupporters,
-        readTherapists: _readTherapists,
         readMySupporters: _readMySupporters,
         deleteSupporter: _deleteSupporter,
         readMyClients: _readMyClients,
@@ -117,7 +115,6 @@ function _update(req, res) {
 }
 
 function _changePassword(req, res) {
-    debugger
     usersService.readById(req.auth.userId)
         .then(user => {
             if (req.body.currentPassword !== user.password) {
@@ -206,34 +203,8 @@ function _currentUser(req, res) {
         })
 }
 
-function _readClients(req, res) {
-    usersService.readClients()
-        .then(users => {
-            const responseModel = new responses.ItemsResponse()
-            responseModel.items = users
-            res.json(responseModel)
-        })
-        .catch(xhr => {
-            console.log(xhr)
-            res.status(500).send(new responses.ErrorResponse(xhr))
-        })
-}
-
 function _readSupporters(req, res) {
     usersService.readSupporters()
-        .then(users => {
-            const responseModel = new responses.ItemsResponse()
-            responseModel.items = users
-            res.json(responseModel)
-        })
-        .catch(xhr => {
-            console.log(xhr)
-            res.status(500).send(new responses.ErrorResponse(xhr))
-        })
-}
-
-function _readTherapists(req, res) {
-    usersService.readTherapists()
         .then(users => {
             const responseModel = new responses.ItemsResponse()
             responseModel.items = users
